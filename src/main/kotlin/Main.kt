@@ -1,41 +1,41 @@
+
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
-import androidx.compose.material.*
-import androidx.compose.material.TextField
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import java.sql.DriverManager
 
 @Composable
 @Preview
-fun App(modifier: Modifier = Modifier) {
+fun app(modifier: Modifier = Modifier) {
     val isButtonPressed = remember { mutableStateListOf(false, false, false) }
     val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка") }
     MaterialTheme {
         Box(modifier = Modifier.background(color = Color(0xFFEFEFEF))) {
             Row {
                 //Панель навигации
-                panel_navigation(isButtonPressed, buttonTitles)
+                panelNavigation(isButtonPressed, buttonTitles)
                 //Основное окно
-                panel_main(isButtonPressed, buttonTitles)
+                panelMain(isButtonPressed, buttonTitles)
             }
         }
     }
 }
 
 @Composable
-fun panel_navigation(isButtonPressed: SnapshotStateList<Boolean>, buttonTitles: SnapshotStateList<String>) {
+fun panelNavigation(isButtonPressed: SnapshotStateList<Boolean>, buttonTitles: SnapshotStateList<String>) {
     Box(
         modifier = Modifier
             .width(150.dp)
@@ -82,11 +82,26 @@ fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List
 
 @Composable
 fun firstPage(text: String) {
-    Text(text)
+    //Text(text)
+    val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
+
+    val statement = connection.createStatement()
+    val resultSet = statement.executeQuery("SELECT * FROM users")
+
+    Column {     while (resultSet.next()) {
+        Row {
+            Text(resultSet.getString("name"))
+            Text(resultSet.getString("date"))
+        }
+
+    } }
+
+
+    connection.close()
 }
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
-        App(Modifier)
+        app(Modifier)
     }
 }
