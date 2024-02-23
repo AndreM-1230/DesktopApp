@@ -4,9 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -80,25 +78,35 @@ fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List
     }
 }
 
+
 @Composable
 fun firstPage(text: String) {
-    //Text(text)
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
-
     val statement = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM users")
+    var quotes by remember { mutableStateOf<List<Result>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        onCreate().collect { result ->quotes = result }
+    }
 
-    Column {     while (resultSet.next()) {
-        Row {
-            Text(resultSet.getString("name"))
-            Text(resultSet.getString("date"))
+    Column {
+        while (resultSet.next()) {
+            Row {
+                Text(resultSet.getString("name"))
+                Text(resultSet.getString("date"))
+            }
         }
 
-    } }
-
-
+        quotes.forEach { quote ->
+            Row {
+                Text(quote.author)
+                Text(quote.content)
+            }
+        }
+    }
     connection.close()
 }
+
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
