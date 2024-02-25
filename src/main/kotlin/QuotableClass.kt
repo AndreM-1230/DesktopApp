@@ -8,7 +8,7 @@ import retrofit2.http.GET
 
 object RetrofitHelper {
 
-    private const val BaseUrl = "https://quotable.io/"
+    private const val BaseUrl = "http://127.0.0.1:8000"
 
     fun getInstance(): Retrofit {
         return Retrofit.Builder().baseUrl(BaseUrl)
@@ -18,8 +18,8 @@ object RetrofitHelper {
 }
 
 interface QuotesApi {
-    @GET("/quotes")
-    suspend fun getQuotes() : Response<QuoteList>
+    @GET("/api/users")
+    suspend fun getQuotes() : Response<LaraServTest>
 }
 
 data class Result(
@@ -42,22 +42,30 @@ data class QuoteList(
     val totalPages: Int
 )
 
-fun onCreate(): Flow<List<Result>> {
+data class LaraServTest(
+    val message: String
+)
+
+
+fun onCreate(): Flow<List<LaraServTest>> {
     val quotesApi = RetrofitHelper.getInstance().create(QuotesApi::class.java)
 
     return flow {
         emit(emptyList())
 
-        val quoteList = try {
-            quotesApi.getQuotes().body()
+        val quoteResponse = try {
+            quotesApi.getQuotes()
         } catch (e: Exception) {
             null
         }
 
-        if (quoteList != null) {
-            emit(quoteList.results)
+        if (quoteResponse != null) {
+            val quote = quoteResponse.body()
+            if (quote != null) {
+                emit(listOf(quote))
+            }
         } else {
-            //
+            // Обработка ошибки
         }
     }
 }

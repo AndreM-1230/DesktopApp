@@ -84,7 +84,7 @@ fun firstPage(text: String) {
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM users")
-    var quotes by remember { mutableStateOf<List<Result>>(emptyList()) }
+    var quotes by remember { mutableStateOf<List<LaraServTest>>(emptyList()) }
     LaunchedEffect(Unit) {
         onCreate().collect { result ->quotes = result }
     }
@@ -99,8 +99,7 @@ fun firstPage(text: String) {
 
         quotes.forEach { quote ->
             Row {
-                Text(quote.author)
-                Text(quote.content)
+                Text(quote.message)
             }
         }
     }
