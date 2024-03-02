@@ -13,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.example.desctopapp.classes.RegistrationClass
 import java.sql.DriverManager
 
 @Composable
@@ -84,24 +85,38 @@ fun firstPage(text: String) {
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM users")
-    var quotes by remember { mutableStateOf<List<LaraServTest>>(emptyList()) }
+    //var quotes by remember { mutableStateOf<List<LaraServTest>>(emptyList()) }
+    //LaunchedEffect(Unit) {
+    //    onCreate().collect { result ->quotes = result }
+    //}
+    val registrationClass = RegistrationClass()
+
+    var hasUser by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
-        onCreate().collect { result ->quotes = result }
+        registrationClass.index().collect { result: Boolean ->
+            hasUser = result
+        }
     }
 
     Column {
         while (resultSet.next()) {
             Row {
-                Text(resultSet.getString("name"))
-                Text(resultSet.getString("date"))
+                //Text(resultSet.getString("name"))
+                //Text(resultSet.getString("date"))
             }
         }
 
-        quotes.forEach { quote ->
-            Row {
-                Text(quote.message)
-            }
+        if (hasUser) {
+            Text("User exists")
+        } else {
+            Text("User does not exist")
         }
+        //quotes.forEach { quote ->
+        //    Row {
+        //        Text(quote.message)
+        //    }
+        //}
     }
     connection.close()
 }
