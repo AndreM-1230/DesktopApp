@@ -1,22 +1,11 @@
 package com.example.desctopapp.classes
 
+import com.example.desctopapp.RetrofitHelper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-object RetrofitHelper {
-
-    private const val BaseUrl = "http://127.0.0.1:8000"
-
-    fun getInstance(): Retrofit {
-        return Retrofit.Builder().baseUrl(BaseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-}
 
 interface QuotesApi {
     @GET("/api/users")

@@ -19,6 +19,9 @@ import java.sql.DriverManager
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
+
+
+
     val isButtonPressed = remember { mutableStateListOf(false, false, false) }
     val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка") }
     MaterialTheme {
@@ -31,6 +34,59 @@ fun app(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+fun checkDBUser() {
+    val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
+    val statement = connection.createStatement()
+    val resultSet = statement.executeQuery("SELECT * FROM users")
+    var hasDBUser = resultSet.next()
+    resultSet.close()
+    statement.close()
+    connection.close()
+    var hasApiUser = false
+    if (hasDBUser) {
+        hasApiUser = checkApiUser(resultSet.getString("login"), resultSet.getString("password"))
+    } else {
+        hasDBUser = createUser()
+    }
+}
+
+fun checkApiUser(login: String, password: String): Boolean {
+    val registrationClass = RegistrationClass()
+    var hasUser by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        registrationClass.index(login, password).collect { result: Boolean ->
+            hasUser = result
+        }
+    }
+    return hasUser
+}
+
+fun createUser(): Boolean {
+    val login = "root"
+    val password = "password"
+    val name = "Andre"
+    val email = "example@gmail.com"
+    val registrationClass = RegistrationClass()
+    var hasApiUser by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        registrationClass.send(login, password, email).collect { result: Boolean ->
+            hasApiUser = result
+        }
+    }
+    if (hasApiUser) {
+        val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
+        // Формируем SQL-запрос INSERT
+        val query = "INSERT INTO users (login, password,name,status,type) VALUES ('$login', '$password', '$name',1,1)"
+        // Создаем объект Statement и выполняем запрос
+        val statement = connection.createStatement()
+        statement.executeUpdate(query)
+        // Закрываем ресурсы
+        statement.close()
+        connection.close()
+    }
+    return hasApiUser
 }
 
 @Composable
@@ -89,15 +145,15 @@ fun firstPage(text: String) {
     //LaunchedEffect(Unit) {
     //    onCreate().collect { result ->quotes = result }
     //}
-    val registrationClass = RegistrationClass()
+    //val registrationClass = RegistrationClass()
 
-    var hasUser by remember { mutableStateOf(false) }
+    //var hasUser by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        registrationClass.index().collect { result: Boolean ->
-            hasUser = result
-        }
-    }
+    //LaunchedEffect(Unit) {
+    //    registrationClass.index(login, password).collect { result: Boolean ->
+    //        hasUser = result
+    //    }
+    //}
 
     Column {
         while (resultSet.next()) {
@@ -107,11 +163,11 @@ fun firstPage(text: String) {
             }
         }
 
-        if (hasUser) {
-            Text("User exists")
-        } else {
-            Text("User does not exist")
-        }
+        //if (hasUser) {
+        //    Text("User exists")
+        //} else {
+        //    Text("User does not exist")
+        //}
         //quotes.forEach { quote ->
         //    Row {
         //        Text(quote.message)
