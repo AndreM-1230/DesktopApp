@@ -6,10 +6,11 @@ data class UserDataClass (
     val password: String,
     val name: String,
     val description: String?,
-    val dateCreated: Long,
-    val dateLastConnection: Long?,
+    val created: Long,
+    val lastConnection: Long?,
     val phone: Int?,
     val email: String,
     val status: Int,
-    val type: Int
+    val type: Int,
+    val updated: Long?,
 )

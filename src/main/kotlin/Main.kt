@@ -19,24 +19,26 @@ import java.sql.DriverManager
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
-
-
-
+    val hasUser = checkDBUser()
     val isButtonPressed = remember { mutableStateListOf(false, false, false) }
     val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка") }
     MaterialTheme {
         Box(modifier = Modifier.background(color = Color(0xFFEFEFEF))) {
             Row {
-                //Панель навигации
-                panelNavigation(isButtonPressed, buttonTitles)
-                //Основное окно
-                panelMain(isButtonPressed, buttonTitles)
+                if (hasUser) {
+                    //Панель навигации
+                    panelNavigation(isButtonPressed, buttonTitles)
+                    //Основное окно
+                    panelMain(isButtonPressed, buttonTitles)
+                }
             }
         }
     }
 }
 
-fun checkDBUser() {
+@Composable
+@Preview
+fun checkDBUser(): Boolean {
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM users")
@@ -50,8 +52,11 @@ fun checkDBUser() {
     } else {
         hasDBUser = createUser()
     }
+    return hasDBUser
 }
 
+@Composable
+@Preview
 fun checkApiUser(login: String, password: String): Boolean {
     val registrationClass = RegistrationClass()
     var hasUser by remember { mutableStateOf(false) }
@@ -63,19 +68,22 @@ fun checkApiUser(login: String, password: String): Boolean {
     return hasUser
 }
 
+@Composable
+@Preview
 fun createUser(): Boolean {
     val login = "root"
     val password = "password"
-    val name = "Andre"
+    val name = "exampleUsername"
     val email = "example@gmail.com"
     val registrationClass = RegistrationClass()
     var hasApiUser by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        registrationClass.send(login, password, email).collect { result: Boolean ->
+        registrationClass.send(login, password, name, email).collect { result: Boolean ->
             hasApiUser = result
         }
     }
     if (hasApiUser) {
+        Text("hasApiUser")
         val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
         // Формируем SQL-запрос INSERT
         val query = "INSERT INTO users (login, password,name,status,type) VALUES ('$login', '$password', '$name',1,1)"
@@ -85,6 +93,8 @@ fun createUser(): Boolean {
         // Закрываем ресурсы
         statement.close()
         connection.close()
+    } else {
+        Text("nohasApiUser")
     }
     return hasApiUser
 }

@@ -1,11 +1,10 @@
 package com.example.desctopapp.classes
 
 import com.example.desctopapp.RetrofitHelper
-import com.example.desctopapp.dataclasses.UserDataClass
+import com.example.desctopapp.dataclasses.CreateUserDataClass
 import com.example.desctopapp.interfaces.RegistrationInterface
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.jetbrains.skiko.currentNanoTime
 
 class RegistrationClass {
 
@@ -33,21 +32,14 @@ class RegistrationClass {
         }
     }
 
-    fun send(login: String, password: String, email: String): Flow<Boolean>
+    fun send(login: String, password: String, name: String, email: String): Flow<Boolean>
     {
         val responseApi = RetrofitHelper.getInstance().create(RegistrationInterface::class.java)
-        val userData = UserDataClass(
-            id = 0,
+        val userData = CreateUserDataClass(
             login = login,
             password = password,
-            name = login,
-            description = null,
-            dateCreated = currentNanoTime(),
-            dateLastConnection = currentNanoTime(), // или любое другое значение
-            phone = null, // или любое другое значение
+            name = name,
             email = email,
-            status = 1, // или любое другое значение
-            type = 1 // или любое другое значение
         )
         return flow {
             emit(false)
