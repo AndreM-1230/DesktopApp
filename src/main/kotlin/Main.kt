@@ -30,6 +30,9 @@ fun app(modifier: Modifier = Modifier) {
                     panelNavigation(isButtonPressed, buttonTitles)
                     //Основное окно
                     panelMain(isButtonPressed, buttonTitles)
+                } else {
+                    //Панель входа ?? регистрации
+                    panelRegistration()
                 }
             }
         }
@@ -42,17 +45,18 @@ fun checkDBUser(): Boolean {
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM users")
-    var hasDBUser = resultSet.next()
+    val hasDBUser = resultSet.next()
     resultSet.close()
     statement.close()
     connection.close()
-    var hasApiUser = false
-    if (hasDBUser) {
-        hasApiUser = checkApiUser(resultSet.getString("login"), resultSet.getString("password"))
-    } else {
-        hasDBUser = createUser()
-    }
-    return hasDBUser
+    //var hasApiUser = false
+    //if (hasDBUser) {
+    //    hasApiUser = checkApiUser(resultSet.getString("login"), resultSet.getString("password"))
+    //} else {
+    //    hasDBUser = createUser()
+    //}
+    //hasDBUser
+    return false
 }
 
 @Composable
