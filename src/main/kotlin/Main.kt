@@ -13,13 +13,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.example.desctopapp.classes.RegistrationClass
 import java.sql.DriverManager
 
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
-    val hasUser = checkDBUser()
+    var hasUser by remember { mutableStateOf(false) }
+    hasUser = checkDBUser()
     val isButtonPressed = remember { mutableStateListOf(false, false, false) }
     val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка") }
     MaterialTheme {
@@ -32,7 +32,7 @@ fun app(modifier: Modifier = Modifier) {
                     panelMain(isButtonPressed, buttonTitles)
                 } else {
                     //Панель входа ?? регистрации
-                    panelRegistration()
+                    panelRegistration(false)
                 }
             }
         }
@@ -57,50 +57,6 @@ fun checkDBUser(): Boolean {
     //}
     //hasDBUser
     return false
-}
-
-@Composable
-@Preview
-fun checkApiUser(login: String, password: String): Boolean {
-    val registrationClass = RegistrationClass()
-    var hasUser by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        registrationClass.index(login, password).collect { result: Boolean ->
-            hasUser = result
-        }
-    }
-    return hasUser
-}
-
-@Composable
-@Preview
-fun createUser(): Boolean {
-    val login = "root"
-    val password = "password"
-    val name = "exampleUsername"
-    val email = "example@gmail.com"
-    val registrationClass = RegistrationClass()
-    var hasApiUser by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        registrationClass.send(login, password, name, email).collect { result: Boolean ->
-            hasApiUser = result
-        }
-    }
-    if (hasApiUser) {
-        Text("hasApiUser")
-        val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
-        // Формируем SQL-запрос INSERT
-        val query = "INSERT INTO users (login, password,name,status,type) VALUES ('$login', '$password', '$name',1,1)"
-        // Создаем объект Statement и выполняем запрос
-        val statement = connection.createStatement()
-        statement.executeUpdate(query)
-        // Закрываем ресурсы
-        statement.close()
-        connection.close()
-    } else {
-        Text("nohasApiUser")
-    }
-    return hasApiUser
 }
 
 @Composable
@@ -193,7 +149,11 @@ fun firstPage(text: String) {
 
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "DesctopApp"
+
+    ) {
         app(Modifier)
     }
 }
