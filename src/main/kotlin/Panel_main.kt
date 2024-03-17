@@ -18,7 +18,7 @@ fun panelMain(isButtonPressed: SnapshotStateList<Boolean>, buttonTitles: Snapsho
             }
             Box ( modifier = Modifier.padding(10.dp)) {
                 when (isButtonPressed.indexOf(true)) {
-                    0 -> firstPage("Это текст функции первой кнопки")
+                    0 -> firstPage("Чаты")
                     1 -> Text("2")
                     2 -> Text("3")
                 }
