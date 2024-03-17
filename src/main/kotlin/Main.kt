@@ -13,26 +13,57 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.example.desctopapp.classes.RegistrationClass
 import java.sql.DriverManager
 
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
-    var hasUser by remember { mutableStateOf(false) }
-    hasUser = checkDBUser()
+    var userLoggedIn by remember { mutableStateOf(false) }
+    var displayLoginPanel by remember { mutableStateOf(false) }
+    var displayLocalCredentialsPanel by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     val isButtonPressed = remember { mutableStateListOf(false, false, false) }
     val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка") }
+    val registrationClass = RegistrationClass()
+    LaunchedEffect(Unit) {
+        // Проверяем, есть ли пользователь в локальной базе данных
+        when (val localUserExists = registrationClass.hasLocalUser()) {
+            // Если пользователя нет в локальной базе данных, отображаем панель входа
+            null -> displayLoginPanel = true
+            else -> {
+                email = localUserExists.email
+                password = localUserExists.password
+                // Если пользователь есть в локальной базе данных, проверяем его наличие на сервере
+                registrationClass.hasUser(email, password).collect { result: Boolean ->
+                    if (result) {
+                        // Если пользователь найден на сервере, устанавливаем флаг userLoggedIn в true
+                        userLoggedIn = true
+                    } else {
+                        // Если пользователь не найден на сервере, устанавливаем флаг displayLocalCredentialsPanel в true
+                        displayLocalCredentialsPanel = true
+                    }
+                }
+            }
+        }
+    }
     MaterialTheme {
         Box(modifier = Modifier.background(color = Color(0xFFEFEFEF))) {
             Row {
-                if (hasUser) {
+                // Отображаем соответствующие панели на основе результатов проверок
+                if (userLoggedIn) {
+                    // Пользователь найден на сервере, отображаем панель навигации и основное окно
                     //Панель навигации
                     panelNavigation(isButtonPressed, buttonTitles)
                     //Основное окно
                     panelMain(isButtonPressed, buttonTitles)
-                } else {
-                    //Панель входа ?? регистрации
-                    panelRegistration(false)
+                } else if (displayLocalCredentialsPanel) {
+                    // Пользователь не найден на сервере, но есть локальные учетные данные, отображаем панель входа с локальными учетными данными
+                    userLoggedIn = panelRegistration(false, email, password)
+                } else if (displayLoginPanel) {
+                    // Пользователь не найден в локальной базе данных, отображаем стандартную панель входа
+                    userLoggedIn = panelRegistration(false)
                 }
             }
         }
@@ -42,21 +73,25 @@ fun app(modifier: Modifier = Modifier) {
 @Composable
 @Preview
 fun checkDBUser(): Boolean {
+    var hasUser by remember { mutableStateOf(false) }
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM users")
     val hasDBUser = resultSet.next()
+    val registrationClass = RegistrationClass()
+    if (hasDBUser) {
+        val email = resultSet.getString("email")
+        val password = resultSet.getString("password")
+        LaunchedEffect(Unit) {
+            registrationClass.hasUser(email, password).collect { result: Boolean ->
+                hasUser = result
+            }
+        }
+    }
     resultSet.close()
     statement.close()
     connection.close()
-    //var hasApiUser = false
-    //if (hasDBUser) {
-    //    hasApiUser = checkApiUser(resultSet.getString("login"), resultSet.getString("password"))
-    //} else {
-    //    hasDBUser = createUser()
-    //}
-    //hasDBUser
-    return false
+    return hasUser
 }
 
 @Composable
@@ -115,12 +150,12 @@ fun firstPage(text: String) {
     //LaunchedEffect(Unit) {
     //    onCreate().collect { result ->quotes = result }
     //}
-    //val registrationClass = RegistrationClass()
+    val registrationClass = RegistrationClass()
 
-    //var hasUser by remember { mutableStateOf(false) }
+    var hasUser by remember { mutableStateOf(false) }
 
     //LaunchedEffect(Unit) {
-    //    registrationClass.index(login, password).collect { result: Boolean ->
+    //    registrationClass.hasUser("example@email.com","password").collect { result: Boolean ->
     //        hasUser = result
     //    }
     //}
@@ -133,11 +168,11 @@ fun firstPage(text: String) {
             }
         }
 
-        //if (hasUser) {
-        //    Text("User exists")
-        //} else {
-        //    Text("User does not exist")
-        //}
+        if (hasUser) {
+            Text("User exists")
+        } else {
+            Text("User does not exist")
+        }
         //quotes.forEach { quote ->
         //    Row {
         //        Text(quote.message)

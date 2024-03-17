@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.desctopapp.classes.RegistrationClass
+import com.example.desctopapp.dataclasses.IsResponse
 import com.example.desctopapp.dataclasses.UserDataClass
 
 @Composable
@@ -22,7 +23,12 @@ fun panelRegistration(
     defaultPassword: String = "",
     emailValidator: (String) -> Boolean = { it.isNotBlank() && isValidEmail(it) },
     passwordValidator: (String) -> Boolean = { it.length >= 6 }
-){
+): Boolean {
+    var email by remember { mutableStateOf(defaultEmail) }
+    var password by remember { mutableStateOf(defaultPassword) }
+    var isResponse by remember { mutableStateOf(IsResponse()) }
+    var isButtonLoading by remember { mutableStateOf(false) }
+    val registrationClass = RegistrationClass()
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -35,11 +41,6 @@ fun panelRegistration(
                 .background(color = Color(0xFFC4C4C4))
                 .align(Alignment.Center)
         ) {
-            var email by remember { mutableStateOf(defaultEmail) }
-            var password by remember { mutableStateOf(defaultPassword) }
-            var hasUser by remember { mutableStateOf(defaultHasUser)}
-            var isButtonLoading by remember { mutableStateOf(false) }
-            val registrationClass = RegistrationClass()
             Column(
                 modifier = Modifier.fillMaxSize().padding(all = 16.dp)
             ) {
@@ -71,53 +72,33 @@ fun panelRegistration(
                         Text("Войти/Зарегистрироваться")
                     }
             }
-            if (isButtonLoading) {
-                LaunchedEffect(Unit) {
-                    registrationClass.index(email, password).collect { result: Boolean ->
-                        hasUser = result
-                    }
+        }
+    }
+    if (isButtonLoading) {
+        LaunchedEffect(Unit) {
+            registrationClass.hasUser(email, password).collect { result: Boolean ->
+                isResponse.hasUser = result
+                isResponse.hasUserResponse = true
+            }
+            if (isResponse.hasUser) {
+                registrationClass.get(email, password).collect { result: UserDataClass ->
+                    isResponse.hasLocalUser = registrationClass.storeUser(result)
+
                 }
-                hasUser = if (hasUser) {
-                    getApiUserData(email, password)
-                } else {
-                    createUser(email, password)
+            } else if (isResponse.hasUserResponse) {
+                registrationClass.send(email, password).collect { result: Boolean ->
+                    isResponse.hasLocalUser = result
                 }
+            }
+            if(isResponse.hasLocalUser) {
                 isButtonLoading = false
             }
         }
     }
+    return isResponse.hasLocalUser
 }
 
 fun isValidEmail(email: String): Boolean {
     val emailRegex = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
     return emailRegex.matches(email)
 }
-
-@Composable
-fun getApiUserData(email: String, password: String): Boolean {
-    val registrationClass = RegistrationClass()
-    var hasUser by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        registrationClass.get(email, password).collect { result: UserDataClass ->
-            hasUser = registrationClass.storeUser(result)
-        }
-    }
-    return hasUser
-}
-
-@Composable
-fun createUser(email: String, password: String): Boolean {
-    var hasUser by remember { mutableStateOf(false) }
-    val registrationClass = RegistrationClass()
-    var hasApiUser by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        registrationClass.send(email, password).collect { result: Boolean ->
-            hasApiUser = result
-        }
-    }
-    if (hasApiUser) {
-        hasUser = getApiUserData(email, password)
-    }
-    return hasUser
-}
-

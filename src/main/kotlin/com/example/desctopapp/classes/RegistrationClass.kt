@@ -10,19 +10,18 @@ import java.sql.DriverManager
 
 class RegistrationClass {
 
-    fun index(login: String, password: String): Flow<Boolean>
-    {
-        val responseApi = RetrofitHelper.getInstance().create(RegistrationInterface::class.java)
+    private val responseApi = RetrofitHelper.getInstance().create(RegistrationInterface::class.java)
 
+    fun hasUser(email: String, password: String): Flow<Boolean>
+    {
         return flow {
             emit(false)
 
             val response = try {
-                responseApi.getHasUser(login, password)
+                responseApi.getHasUser(email, password)
             } catch (e: Exception) {
                 null
             }
-
             if (response != null) {
                 val body = response.body()
                 if (body != null) {
@@ -32,6 +31,23 @@ class RegistrationClass {
                 // Обработка ошибки
             }
         }
+    }
+
+    fun hasLocalUser(): CreateUserDataClass?
+    {
+        var userData: CreateUserDataClass? = null
+        val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
+        val statement = connection.createStatement()
+        val resultSet = statement.executeQuery("SELECT * FROM users")
+        if(resultSet.next()) {
+            val email = resultSet.getString("email")
+            val password = resultSet.getString("password")
+            userData = CreateUserDataClass(email, password)
+        }
+        resultSet.close()
+        statement.close()
+        connection.close()
+        return userData
     }
 
     fun get(email: String, password: String): Flow<UserDataClass>
@@ -56,34 +72,8 @@ class RegistrationClass {
         }
     }
 
-    fun send(email: String, password: String): Flow<Boolean>
+    fun storeUser(userData: UserDataClass?): Boolean
     {
-        val responseApi = RetrofitHelper.getInstance().create(RegistrationInterface::class.java)
-        val userData = CreateUserDataClass(
-            email = email,
-            password = password,
-        )
-        return flow {
-            emit(false)
-
-            val response = try {
-                responseApi.storeUser(userData)
-            } catch (e: Exception) {
-                null
-            }
-
-            if (response != null) {
-                val body = response.body()
-                if (body != null) {
-                    emit(body.hasUser)
-                }
-            } else {
-                // Обработка ошибки
-            }
-        }
-    }
-
-    fun storeUser(userData: UserDataClass?): Boolean {
         if (userData != null) {
             val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
             try {
@@ -113,6 +103,33 @@ class RegistrationClass {
         } else {
             // Если переданные данные пользователя равны null, возвращаем false
             return false
+        }
+    }
+
+    fun send(email: String, password: String): Flow<Boolean>
+    {
+        val responseApi = RetrofitHelper.getInstance().create(RegistrationInterface::class.java)
+        val userData = CreateUserDataClass(
+            email = email,
+            password = password,
+        )
+        return flow {
+            emit(false)
+
+            val response = try {
+                responseApi.storeUser(userData)
+            } catch (e: Exception) {
+                null
+            }
+
+            if (response != null) {
+                val body = response.body()
+                if (body != null) {
+                    emit(storeUser(body))
+                }
+            } else {
+                // Обработка ошибки
+            }
         }
     }
 
