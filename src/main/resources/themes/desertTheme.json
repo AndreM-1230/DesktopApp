@@ -1,0 +1,11 @@
+{
+  "name": "Desert",
+  "name_ru": "Пустыня",
+  "mainColor": "0xFF46211A",
+  "subColor": "0xFF693D3D",
+  "sub2Color": "",
+  "btnColor": "0xFFBA5536",
+  "btnColorActive": "0xFFA43820",
+  "textColor": "0xFFFFFFFF",
+  "textColorActive": "0xFFFFFFFF"
+}

@@ -14,18 +14,44 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.example.desctopapp.classes.RegistrationClass
+import com.example.desctopapp.dataclasses.ThemeDataClass
+import com.google.gson.Gson
+import java.io.File
 import java.sql.DriverManager
 
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
-    var userLoggedIn by remember { mutableStateOf(false) }
+    val themesDir = File("themes")
+    val themesData = mutableListOf<ThemeDataClass>()
+    themesDir.listFiles()?.forEach { file ->
+        val json = file.readText()
+        val gson = Gson()
+        val data = gson.fromJson(json, ThemeDataClass::class.java)
+        themesData.add(data)
+        Text(file.name)
+    }
+    val defaultTheme = ThemeDataClass(
+        "Desert",
+        "Пустыня",
+        0xFF46211A,
+        0xFF693D3D,
+        0xFF693D3D,
+        0xFFBA5536,
+        0xFFA43820,
+        0xFFFFFFFF,
+        0xFFFFFFFF
+    )
+    val currentTheme = themesData.find { it.name == "Chocolate" } ?: defaultTheme
+
+    var userLoggedIn by remember { mutableStateOf(true) }
     var displayLoginPanel by remember { mutableStateOf(false) }
     var displayLocalCredentialsPanel by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val isButtonPressed = remember { mutableStateListOf(false, false, false) }
-    val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка") }
+    val isButtonPressed = remember { mutableStateListOf(false, false, false, false) }
+    val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка", "Настройки") }
+    /*
     val registrationClass = RegistrationClass()
     LaunchedEffect(Unit) {
         // Проверяем, есть ли пользователь в локальной базе данных
@@ -48,16 +74,17 @@ fun app(modifier: Modifier = Modifier) {
             }
         }
     }
+    */
     MaterialTheme {
-        Box(modifier = Modifier.background(color = Color(0xFFEFEFEF))) {
+        Box(modifier = Modifier.background(color = Color(currentTheme.mainColor))) {
             Row {
                 // Отображаем соответствующие панели на основе результатов проверок
                 if (userLoggedIn) {
                     // Пользователь найден на сервере, отображаем панель навигации и основное окно
                     //Панель навигации
-                    panelNavigation(isButtonPressed, buttonTitles)
+                    panelNavigation(currentTheme, isButtonPressed, buttonTitles)
                     //Основное окно
-                    panelMain(isButtonPressed, buttonTitles)
+                    panelMain(currentTheme, isButtonPressed, buttonTitles)
                 } else if (displayLocalCredentialsPanel) {
                     // Пользователь не найден на сервере, но есть локальные учетные данные, отображаем панель входа с локальными учетными данными
                     userLoggedIn = panelRegistration(false, email, password)
@@ -95,23 +122,27 @@ fun checkDBUser(): Boolean {
 }
 
 @Composable
-fun panelNavigation(isButtonPressed: SnapshotStateList<Boolean>, buttonTitles: SnapshotStateList<String>) {
+fun panelNavigation(
+    currentTheme: ThemeDataClass,
+    isButtonPressed: SnapshotStateList<Boolean>,
+    buttonTitles: SnapshotStateList<String>
+) {
     Box(
         modifier = Modifier
             .width(150.dp)
             .height(1080.dp)
-            .background(color = Color(0xFFC4C4C4))
+            .background(color = Color(currentTheme.subColor))
     ) {
         Card(
             modifier = Modifier
                 .height(IntrinsicSize.Min)
-                .background(color = Color(0xFFC4C4C4))
+                .background(color = Color(currentTheme.subColor))
                 .padding(top = 20.dp),
             elevation = 10.dp
         ) {
-            Column (modifier = Modifier.background(color = Color(0xFFC4C4C4))) {
+            Column (modifier = Modifier.background(color = Color(currentTheme.subColor))) {
                 for (i in 0 until buttonTitles.size) {
-                    mainButton(i, isButtonPressed, buttonTitles)
+                    mainButton(i, isButtonPressed, buttonTitles, currentTheme)
                 }
             }
         }
@@ -119,15 +150,15 @@ fun panelNavigation(isButtonPressed: SnapshotStateList<Boolean>, buttonTitles: S
 }
 
 @Composable
-fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List<String>) {
+fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List<String>, currentTheme: ThemeDataClass) {
     Button(
         onClick = { for (j in 0 until isButtonPressed.size) {
             isButtonPressed[j] = false
             if (j == i) isButtonPressed[i] = true
         } }, // Упрощенная логика переключения состояний
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (isButtonPressed[i]) Color.DarkGray else Color.Yellow,
-            contentColor = if (isButtonPressed[i]) Color.White else Color.Black
+            backgroundColor = if (isButtonPressed[i]) Color(currentTheme.btnColorActive) else Color(currentTheme.btnColor),
+            contentColor = if (isButtonPressed[i]) Color(currentTheme.textColorActive) else Color(currentTheme.textColor)
         ),
         modifier = Modifier.padding(10.dp)
     ) {

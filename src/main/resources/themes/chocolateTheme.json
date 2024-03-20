@@ -1,0 +1,11 @@
+{
+  "name": "Chocolate",
+  "name_ru": "Шоколад",
+  "mainColor": "0xFF301B28",
+  "subColor": "0xFF523634",
+  "sub2Color": "",
+  "btnColor": "0xFFDDC5A2",
+  "btnColorActive": "0xFFB6452C",
+  "textColor": "0xFF301B28",
+  "textColorActive": "0xFFFFFFFF"
+}
