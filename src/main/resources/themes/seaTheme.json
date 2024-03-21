@@ -1,0 +1,11 @@
+{
+  "name": "Sea",
+  "name_ru": "Море",
+  "mainColor": "FFC4DFE6",
+  "subColor": "FF07575B",
+  "sub2Color": "",
+  "btnColor": "FF66A5AD",
+  "btnColorActive": "FF003B46",
+  "textColor": "FFFFFFFF",
+  "textColorActive": "FF66A5AD"
+}

@@ -22,27 +22,27 @@ import java.sql.DriverManager
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
-    val themesDir = File("themes")
+    var currentThemeName by remember { mutableStateOf("Sea") }
+    val themesDir = File("src/main/resources/themes")
     val themesData = mutableListOf<ThemeDataClass>()
     themesDir.listFiles()?.forEach { file ->
         val json = file.readText()
         val gson = Gson()
         val data = gson.fromJson(json, ThemeDataClass::class.java)
         themesData.add(data)
-        Text(file.name)
     }
     val defaultTheme = ThemeDataClass(
         "Desert",
         "Пустыня",
-        0xFF46211A,
-        0xFF693D3D,
-        0xFF693D3D,
-        0xFFBA5536,
-        0xFFA43820,
-        0xFFFFFFFF,
-        0xFFFFFFFF
+        "FF46211A",
+        "FF693D3D",
+        "FF693D3D",
+        "FFBA5536",
+        "FFA43820",
+        "FFFFFFFF",
+        "FFFFFFFF"
     )
-    val currentTheme = themesData.find { it.name == "Chocolate" } ?: defaultTheme
+    var currentTheme = themesData.find { it.name == currentThemeName } ?: defaultTheme
 
     var userLoggedIn by remember { mutableStateOf(true) }
     var displayLoginPanel by remember { mutableStateOf(false) }
@@ -76,7 +76,7 @@ fun app(modifier: Modifier = Modifier) {
     }
     */
     MaterialTheme {
-        Box(modifier = Modifier.background(color = Color(currentTheme.mainColor))) {
+        Box(modifier = Modifier.background(color = Color(currentTheme.mainColor.toLong(16)))) {
             Row {
                 // Отображаем соответствующие панели на основе результатов проверок
                 if (userLoggedIn) {
@@ -131,16 +131,16 @@ fun panelNavigation(
         modifier = Modifier
             .width(150.dp)
             .height(1080.dp)
-            .background(color = Color(currentTheme.subColor))
+            .background(color = Color(currentTheme.subColor.toLong(16)))
     ) {
         Card(
             modifier = Modifier
                 .height(IntrinsicSize.Min)
-                .background(color = Color(currentTheme.subColor))
+                .background(color = Color(currentTheme.subColor.toLong(16)))
                 .padding(top = 20.dp),
             elevation = 10.dp
         ) {
-            Column (modifier = Modifier.background(color = Color(currentTheme.subColor))) {
+            Column (modifier = Modifier.background(color = Color(currentTheme.subColor.toLong(16)))) {
                 for (i in 0 until buttonTitles.size) {
                     mainButton(i, isButtonPressed, buttonTitles, currentTheme)
                 }
@@ -157,8 +157,8 @@ fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List
             if (j == i) isButtonPressed[i] = true
         } }, // Упрощенная логика переключения состояний
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (isButtonPressed[i]) Color(currentTheme.btnColorActive) else Color(currentTheme.btnColor),
-            contentColor = if (isButtonPressed[i]) Color(currentTheme.textColorActive) else Color(currentTheme.textColor)
+            backgroundColor = if (isButtonPressed[i]) Color(currentTheme.btnColorActive.toLong(16)) else Color(currentTheme.btnColor.toLong(16)),
+            contentColor = if (isButtonPressed[i]) Color(currentTheme.textColorActive.toLong(16)) else Color(currentTheme.textColor.toLong(16))
         ),
         modifier = Modifier.padding(10.dp)
     ) {
