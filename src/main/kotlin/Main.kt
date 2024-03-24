@@ -34,7 +34,10 @@ fun app(modifier: Modifier = Modifier) {
         ThemeObject.list.add(data)
     }
     //ThemeObject.current = ThemeObject.list.find { it.name == currentThemeName }
-
+    var currentTheme = remember { mutableStateOf(ThemeObject.current) }
+    LaunchedEffect(ThemeObject.current) {
+        currentTheme.value = ThemeObject.current
+    }
     var userLoggedIn by remember { mutableStateOf(true) }
     var displayLoginPanel by remember { mutableStateOf(false) }
     var displayLocalCredentialsPanel by remember { mutableStateOf(false) }
@@ -67,7 +70,7 @@ fun app(modifier: Modifier = Modifier) {
     }
     */
     MaterialTheme {
-        Box(modifier = Modifier.background(color = Color(ThemeObject.current!!.mainColor.toLong(16)))) {
+        Box(modifier = Modifier.background(color = Color(currentTheme.value!!.mainColor.toLong(16)))) {
             Row {
                 // Отображаем соответствующие панели на основе результатов проверок
                 if (userLoggedIn) {
