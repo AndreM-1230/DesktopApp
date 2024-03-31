@@ -13,29 +13,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.example.desctopapp.NavigationObject
 import com.example.desctopapp.ThemeObject
+import com.example.desctopapp.TitlesObject
 import com.example.desctopapp.classes.RegistrationClass
 import com.example.desctopapp.dataclasses.ThemeDataClass
+import com.example.desctopapp.dataclasses.TitlesDataClass
 import com.google.gson.Gson
 import java.io.File
-import java.nio.charset.Charset
 import java.sql.DriverManager
 
 @Composable
 @Preview
 fun app(modifier: Modifier = Modifier) {
-    //val currentThemeName by remember { mutableStateOf("Sea") }
-    val charset = Charset.forName("UTF-8")
+    val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
+    val statement = connection.createStatement()
+    val resultSet = statement.executeQuery("SELECT theme_name, titles_name FROM setting LIMIT 1")
     val themesDir = File("src/main/resources/themes")
     themesDir.listFiles()?.forEach { file ->
         val json = file.readText(Charsets.UTF_8)
         val gson = Gson()
         val data = gson.fromJson(json, ThemeDataClass::class.java)
         ThemeObject.list.add(data)
+        if (resultSet.getString("theme_name") == data.name) {
+            ThemeObject.current = data
+        }
     }
-    //ThemeObject.current = ThemeObject.list.find { it.name == currentThemeName }
+    val titlesDir = File("src/main/resources/titles")
+    titlesDir.listFiles()?.forEach { file ->
+        val json = file.readText(Charsets.UTF_8)
+        val gson = Gson()
+        val data = gson.fromJson(json, TitlesDataClass::class.java)
+        TitlesObject.list.add(data)
+        if (resultSet.getString("titles_name") == data.language) {
+            TitlesObject.current = data
+        }
+    }
+    connection.close()
     var currentTheme = remember { mutableStateOf(ThemeObject.current) }
-    LaunchedEffect(ThemeObject.current) {
+    LaunchedEffect(key1 = ThemeObject.current) {
         currentTheme.value = ThemeObject.current
     }
     var userLoggedIn by remember { mutableStateOf(true) }
@@ -120,22 +136,26 @@ fun panelNavigation(
     isButtonPressed: SnapshotStateList<Boolean>,
     buttonTitles: SnapshotStateList<String>
 ) {
+    var currentTheme = remember { mutableStateOf(ThemeObject.current) }
+    LaunchedEffect(key1 = ThemeObject.current) {
+        currentTheme.value = ThemeObject.current
+    }
     Box(
         modifier = Modifier
             .width(150.dp)
             .height(1080.dp)
-            .background(color = Color(ThemeObject.current!!.subColor.toLong(16)))
+            .background(color = Color(currentTheme.value!!.subColor.toLong(16)))
     ) {
         Card(
             modifier = Modifier
                 .height(IntrinsicSize.Min)
-                .background(color = Color(ThemeObject.current!!.subColor.toLong(16)))
+                .background(color = Color(currentTheme.value!!.subColor.toLong(16)))
                 .padding(top = 20.dp),
             elevation = 10.dp
         ) {
-            Column (modifier = Modifier.background(color = Color(ThemeObject.current!!.subColor.toLong(16)))) {
-                for (i in 0 until buttonTitles.size) {
-                    mainButton(i, isButtonPressed, buttonTitles)
+            Column (modifier = Modifier.background(color = Color(currentTheme.value!!.subColor.toLong(16)))) {
+                for (i in 0 until NavigationObject.navigationButtons.size) {
+                    mainButton(i)
                 }
             }
         }
@@ -143,15 +163,22 @@ fun panelNavigation(
 }
 
 @Composable
-fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List<String>) {
+fun mainButton(i: Int) {
+    var currentTheme = remember { mutableStateOf(ThemeObject.current) }
+    LaunchedEffect(key1 = ThemeObject.current) {
+        currentTheme.value = ThemeObject.current
+    }
+    val buttonText = TitlesObject.current?.let {
+        val fieldName = NavigationObject.navigationButtons[i]
+        val field = it::class.java.getDeclaredField(fieldName)
+        field.isAccessible = true
+        field.get(it) as? String ?: ""
+    } ?: ""
     Button(
-        onClick = { for (j in 0 until isButtonPressed.size) {
-            isButtonPressed[j] = false
-            if (j == i) isButtonPressed[i] = true
-        } }, // Упрощенная логика переключения состояний
+        onClick = { NavigationObject.current.value = NavigationObject.navigationButtons[i] }, // Упрощенная логика переключения состояний
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (isButtonPressed[i]) Color(ThemeObject.current!!.btnColorActive.toLong(16)) else Color(ThemeObject.current!!.btnColor.toLong(16)),
-            contentColor = if (isButtonPressed[i]) Color(ThemeObject.current!!.textColorActive.toLong(16)) else Color(ThemeObject.current!!.textColor.toLong(16))
+            backgroundColor = if (NavigationObject.current.value == NavigationObject.navigationButtons[i]) Color(currentTheme.value!!.btnColorActive.toLong(16)) else Color(currentTheme.value!!.btnColor.toLong(16)),
+            contentColor = if (NavigationObject.current.value == NavigationObject.navigationButtons[i]) Color(currentTheme.value!!.textColorActive.toLong(16)) else Color(currentTheme.value!!.textColor.toLong(16))
         ),
         modifier = Modifier.padding(10.dp)
     ) {
@@ -160,7 +187,7 @@ fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List
             contentDescription = "image description",
             contentScale = ContentScale.None
         )
-        Text(buttonTitles[i])
+        Text(buttonText)
     }
 }
 
@@ -169,14 +196,14 @@ fun mainButton(i: Int, isButtonPressed: MutableList<Boolean>, buttonTitles: List
 fun firstPage(text: String) {
     val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
-    val resultSet = statement.executeQuery("SELECT * FROM users")
+    val resultSet = statement.executeQuery("SELECT * FROM chats_users")
     //var quotes by remember { mutableStateOf<List<LaraServTest>>(emptyList()) }
     //LaunchedEffect(Unit) {
     //    onCreate().collect { result ->quotes = result }
     //}
     val registrationClass = RegistrationClass()
 
-    var hasUser by remember { mutableStateOf(false) }
+    var chats by remember { mutableStateOf(false) }
 
     //LaunchedEffect(Unit) {
     //    registrationClass.hasUser("example@email.com","password").collect { result: Boolean ->
@@ -187,16 +214,17 @@ fun firstPage(text: String) {
     Column {
         while (resultSet.next()) {
             Row {
-                //Text(resultSet.getString("name"))
-                //Text(resultSet.getString("date"))
+                Text(resultSet.getString("chatId"))
+                Text(resultSet.getString("userId"))
+                Text(resultSet.getString("title"))
             }
         }
 
-        if (hasUser) {
-            Text("User exists")
-        } else {
-            Text("User does not exist")
-        }
+        //if (hasUser) {
+        //    Text("User exists")
+        //} else {
+        //    Text("User does not exist")
+        //}
         //quotes.forEach { quote ->
         //    Row {
         //        Text(quote.message)
@@ -208,11 +236,15 @@ fun firstPage(text: String) {
 
 
 fun main() = application {
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colors.onSurface) {
+
+
     Window(
         onCloseRequest = ::exitApplication,
         title = "DesctopApp"
 
     ) {
         app(Modifier)
+    }
     }
 }
