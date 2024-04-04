@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.example.desctopapp.NavigationObject
@@ -142,7 +143,7 @@ fun panelNavigation(
     }
     Box(
         modifier = Modifier
-            .width(150.dp)
+            .width(170.dp)
             .height(1080.dp)
             .background(color = Color(currentTheme.value!!.subColor.toLong(16)))
     ) {
@@ -180,14 +181,15 @@ fun mainButton(i: Int) {
             backgroundColor = if (NavigationObject.current.value == NavigationObject.navigationButtons[i]) Color(currentTheme.value!!.btnColorActive.toLong(16)) else Color(currentTheme.value!!.btnColor.toLong(16)),
             contentColor = if (NavigationObject.current.value == NavigationObject.navigationButtons[i]) Color(currentTheme.value!!.textColorActive.toLong(16)) else Color(currentTheme.value!!.textColor.toLong(16))
         ),
-        modifier = Modifier.padding(10.dp)
+        modifier = Modifier.padding(10.dp).width(150.dp)
     ) {
         Image(
             painter = painterResource("drawable/menu.svg"),
             contentDescription = "image description",
-            contentScale = ContentScale.None
+            contentScale = ContentScale.None,
+            modifier = Modifier.padding(end = 8.dp)
         )
-        Text(buttonText)
+        Text(buttonText, fontSize = 11.sp)
     }
 }
 

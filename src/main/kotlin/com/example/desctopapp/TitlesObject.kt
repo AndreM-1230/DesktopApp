@@ -5,6 +5,7 @@ import com.example.desctopapp.dataclasses.TitlesDataClass
 object TitlesObject {
     var current: TitlesDataClass? = TitlesDataClass(
         "English",
+        "Profile",
         "New Group",
         "Chats",
         "Contacts",

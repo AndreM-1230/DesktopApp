@@ -33,6 +33,7 @@ fun panelMain(
             }
             Box ( modifier = Modifier.padding(10.dp)) {
                 when (NavigationObject.current.value) {
+                    "profile" -> Text("Profile")
                     "newGroup" -> Text("newGroup")
                     "chats" -> firstPage("Чаты")
                     "contacts" -> Text("contacts")
