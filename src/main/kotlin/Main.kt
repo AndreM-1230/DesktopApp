@@ -1,17 +1,16 @@
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.example.desctopapp.NavigationObject
@@ -20,6 +19,7 @@ import com.example.desctopapp.TitlesObject
 import com.example.desctopapp.classes.RegistrationClass
 import com.example.desctopapp.dataclasses.ThemeDataClass
 import com.example.desctopapp.dataclasses.TitlesDataClass
+import com.example.desctopapp.templates.ButtonTemplate
 import com.google.gson.Gson
 import java.io.File
 import java.sql.DriverManager
@@ -138,6 +138,8 @@ fun panelNavigation(
     buttonTitles: SnapshotStateList<String>
 ) {
     var currentTheme = remember { mutableStateOf(ThemeObject.current) }
+    val buttonTemplate = ButtonTemplate()
+
     LaunchedEffect(key1 = ThemeObject.current) {
         currentTheme.value = ThemeObject.current
     }
@@ -156,43 +158,12 @@ fun panelNavigation(
         ) {
             Column (modifier = Modifier.background(color = Color(currentTheme.value!!.subColor.toLong(16)))) {
                 for (i in 0 until NavigationObject.navigationButtons.size) {
-                    mainButton(i)
+                    buttonTemplate.mainButton(i)
                 }
             }
         }
     }
 }
-
-@Composable
-fun mainButton(i: Int) {
-    var currentTheme = remember { mutableStateOf(ThemeObject.current) }
-    LaunchedEffect(key1 = ThemeObject.current) {
-        currentTheme.value = ThemeObject.current
-    }
-    val buttonText = TitlesObject.current?.let {
-        val fieldName = NavigationObject.navigationButtons[i]
-        val field = it::class.java.getDeclaredField(fieldName)
-        field.isAccessible = true
-        field.get(it) as? String ?: ""
-    } ?: ""
-    Button(
-        onClick = { NavigationObject.current.value = NavigationObject.navigationButtons[i] }, // Упрощенная логика переключения состояний
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (NavigationObject.current.value == NavigationObject.navigationButtons[i]) Color(currentTheme.value!!.btnColorActive.toLong(16)) else Color(currentTheme.value!!.btnColor.toLong(16)),
-            contentColor = if (NavigationObject.current.value == NavigationObject.navigationButtons[i]) Color(currentTheme.value!!.textColorActive.toLong(16)) else Color(currentTheme.value!!.textColor.toLong(16))
-        ),
-        modifier = Modifier.padding(10.dp).width(150.dp)
-    ) {
-        Image(
-            painter = painterResource("drawable/menu.svg"),
-            contentDescription = "image description",
-            contentScale = ContentScale.None,
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text(buttonText, fontSize = 11.sp)
-    }
-}
-
 
 @Composable
 fun firstPage(text: String) {

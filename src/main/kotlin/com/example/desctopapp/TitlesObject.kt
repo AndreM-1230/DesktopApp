@@ -11,6 +11,8 @@ object TitlesObject {
         "Contacts",
         "Saved Message",
         "Setting",
+        "Themes",
+        "Language",
         "About",
     )
     var list: MutableList<TitlesDataClass> = mutableListOf()

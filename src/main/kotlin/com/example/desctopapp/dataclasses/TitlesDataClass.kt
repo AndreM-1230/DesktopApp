@@ -8,5 +8,7 @@ data class TitlesDataClass(
     val contacts: String,
     val savedMessages: String,
     val setting: String,
+    val settingTheme: String,
+    val settingLanguage: String,
     val about: String,
 )

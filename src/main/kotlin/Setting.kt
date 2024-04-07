@@ -1,7 +1,8 @@
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
@@ -11,8 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.desctopapp.ThemeObject
 import com.example.desctopapp.TitlesObject
@@ -26,49 +25,54 @@ fun setting(title: String)
     var isTitlesChanged = remember { mutableStateOf(false) }
     var titlesChangedName = remember { mutableStateOf("") }
     var allThemes = remember { ThemeObject.list }
+    var currentName = remember { mutableStateOf("") }
+
         Column {
-            Text("Темы")
-            for (i in 0 until allThemes.size) {
-                Button(
-                    onClick = {
-                        isThemeChanged.value = true
-                        themeChangedName.value = allThemes[i].name
-                        //ThemeObject.current = allThemes[i]
-                    }, // Упрощенная логика переключения состояний
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (allThemes[i].name == ThemeObject.current!!.name) Color(ThemeObject.current!!.btnColorActive.toLong(16)) else Color(ThemeObject.current!!.btnColor.toLong(16)),
-                        contentColor = if (allThemes[i].name == ThemeObject.current!!.name) Color(ThemeObject.current!!.textColorActive.toLong(16)) else Color(ThemeObject.current!!.textColor.toLong(16))
-                    ),
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Image(
-                        painter = painterResource("drawable/menu.svg"),
-                        contentDescription = "image description",
-                        contentScale = ContentScale.None
-                    )
-                    Text(allThemes[i].nameRu)
+            Text(TitlesObject.current!!.settingTheme)
+            LazyRow (
+                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+            ) {
+                items(allThemes.size) {
+                    if (TitlesObject.current!!.language == "English") {
+                        currentName.value = allThemes[it].nameRu
+                    } else {
+                        currentName.value = allThemes[it].name
+                    }
+                    Button(
+                        onClick = {
+                            isThemeChanged.value = true
+                            themeChangedName.value = allThemes[it].name
+                            //ThemeObject.current = allThemes[i]
+                        }, // Упрощенная логика переключения состояний
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (allThemes[it].name == ThemeObject.current!!.name) Color(ThemeObject.current!!.btnColorActive.toLong(16)) else Color(ThemeObject.current!!.btnColor.toLong(16)),
+                            contentColor = if (allThemes[it].name == ThemeObject.current!!.name) Color(ThemeObject.current!!.textColorActive.toLong(16)) else Color(ThemeObject.current!!.textColor.toLong(16))
+                        ),
+                        modifier = Modifier.padding(10.dp)
+                    ) {
+                        Text(allThemes[it].name)
+                    }
                 }
             }
-            Text("Язык")
-            for (i in 0 until TitlesObject.list.size) {
-                Button(
-                    onClick = {
-                        isTitlesChanged.value = true
-                        titlesChangedName.value = TitlesObject.list[i].language
-                        //ThemeObject.current = allThemes[i]
-                    }, // Упрощенная логика переключения состояний
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (TitlesObject.list[i].language == TitlesObject.current!!.language) Color(ThemeObject.current!!.btnColorActive.toLong(16)) else Color(ThemeObject.current!!.btnColor.toLong(16)),
-                        contentColor = if (TitlesObject.list[i].language == TitlesObject.current!!.language) Color(ThemeObject.current!!.textColorActive.toLong(16)) else Color(ThemeObject.current!!.textColor.toLong(16))
-                    ),
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Image(
-                        painter = painterResource("drawable/menu.svg"),
-                        contentDescription = "image description",
-                        contentScale = ContentScale.None
-                    )
-                    Text(TitlesObject.list[i].language)
+            Text(TitlesObject.current!!.settingLanguage)
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)
+            ) {
+                items(TitlesObject.list.size) {
+                    Button(
+                        onClick = {
+                            isTitlesChanged.value = true
+                            titlesChangedName.value = TitlesObject.list[it].language
+                            //ThemeObject.current = allThemes[i]
+                        }, // Упрощенная логика переключения состояний
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (TitlesObject.list[it].language == TitlesObject.current!!.language) Color(ThemeObject.current!!.btnColorActive.toLong(16)) else Color(ThemeObject.current!!.btnColor.toLong(16)),
+                            contentColor = if (TitlesObject.list[it].language == TitlesObject.current!!.language) Color(ThemeObject.current!!.textColorActive.toLong(16)) else Color(ThemeObject.current!!.textColor.toLong(16))
+                        ),
+                        modifier = Modifier.padding(10.dp)
+                    ) {
+                        Text(TitlesObject.list[it].language)
+                    }
                 }
             }
         }
