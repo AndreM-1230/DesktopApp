@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -62,7 +61,7 @@ fun app(modifier: Modifier = Modifier) {
     var password by remember { mutableStateOf("") }
     val isButtonPressed = remember { mutableStateListOf(false, false, false, false) }
     val buttonTitles = remember { mutableStateListOf("Привет", "Вторая кнопка", "Ещё кнопка", "Настройки") }
-    /*
+
     val registrationClass = RegistrationClass()
     LaunchedEffect(Unit) {
         // Проверяем, есть ли пользователь в локальной базе данных
@@ -85,7 +84,7 @@ fun app(modifier: Modifier = Modifier) {
             }
         }
     }
-    */
+
     MaterialTheme {
         Box(modifier = Modifier.background(color = Color(currentTheme.value!!.mainColor.toLong(16)))) {
             Row {
@@ -167,31 +166,23 @@ fun panelNavigation(
 
 @Composable
 fun firstPage(text: String) {
-    val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
+    /*val connection = DriverManager.getConnection("jdbc:sqlite:identifier.sqlite")
     val statement = connection.createStatement()
+    val statements2 = connection.createStatement()
     val resultSet = statement.executeQuery("SELECT * FROM chats_users")
+    var currentTheme = remember { mutableStateOf(ThemeObject.current) }
+    val chatsList = ChatsListTemplate()*/
     //var quotes by remember { mutableStateOf<List<LaraServTest>>(emptyList()) }
     //LaunchedEffect(Unit) {
     //    onCreate().collect { result ->quotes = result }
     //}
-    val registrationClass = RegistrationClass()
-
-    var chats by remember { mutableStateOf(false) }
 
     //LaunchedEffect(Unit) {
     //    registrationClass.hasUser("example@email.com","password").collect { result: Boolean ->
     //        hasUser = result
     //    }
     //}
-
     Column {
-        while (resultSet.next()) {
-            Row {
-                Text(resultSet.getString("chatId"))
-                Text(resultSet.getString("userId"))
-                Text(resultSet.getString("title"))
-            }
-        }
 
         //if (hasUser) {
         //    Text("User exists")
@@ -204,7 +195,7 @@ fun firstPage(text: String) {
         //    }
         //}
     }
-    connection.close()
+   //connection.close()
 }
 
 

@@ -35,7 +35,7 @@ fun panelMain(
                 when (NavigationObject.current.value) {
                     "profile" -> Text("Profile")
                     "newGroup" -> Text("newGroup")
-                    "chats" -> firstPage("Чаты")
+                    "chats" -> panel_chats("Чаты")
                     "contacts" -> Text("contacts")
                     "savedMessages" -> Text("3")
                     "setting"-> setting("Настройки")
